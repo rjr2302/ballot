@@ -48,6 +48,123 @@ Election.score = function(model, options){
 
 };
 
+Election.judgment = function(model, options){
+	let votes = {};
+	for (let id in model.candidatesById) votes[id] = [];
+
+	let ballots = model.getBallots();
+	for (let ballot of ballots){
+		for (let [id, score] of Object.entries(ballot)){
+			votes[id].push(score);
+		}
+	}
+
+	let text = "<span class='small'>";
+
+	let medians = {}
+	for (let id of Object.keys(votes)){
+		votes[id].sort();
+		
+		let votesForCandidate = votes[id];;
+		let index = votesForCandidate.length/2;
+		let median = votesForCandidate[index];
+		medians[id] = median;
+		text += _icon(id) + " had a median score of " + median + "/5 <br>";
+	}
+
+	text += "<br>";
+
+
+	let winners = [];
+	let bestMedian = -1;
+	for (let [id, median] of Object.entries(medians)){
+		if (median > bestMedian){
+			bestMedian = median;
+			winners = [id];
+		} else if (median === bestMedian){
+			winners.push(id);
+		}
+	}
+
+	let winner = null;
+	if(winners.length === 1){
+		winner = winners[0];
+	} else {
+		text += "Tied scores between " + winners.map(_icon).join(", ") + ". Breaking tie <br>";
+		text += "<br>";
+		text += "<b>Usual Judgment</b><br>"
+		winner = winners[0] //TEMP
+
+		let counts = {};
+		let maxUsual = -1;
+		let usualWinner;
+		for (let id of winners){
+			let count = {approve: 0, neutral: 0, disapprove: 0};
+			// We already did a sort so we should be able to do this faster with some binary search
+			for (let vote of votes[id]){
+				if (vote < bestMedian){
+					count.disapprove += 1;
+				} else if (vote === bestMedian){
+					count.neutral += 1;
+				} else {
+					count.approve += 1;
+				}
+			}
+			counts[id] = count;
+
+			// Usual Judgment Winner
+			let usualScore = bestMedian + ((count.approve - count.disapprove) / (2 * count.neutral));
+			if (usualScore > maxUsual) {
+				maxUsual = usualScore;
+				usualWinner = id;
+			}
+			text += _icon(id) + " had a usual judgment of " + usualScore.toFixed(2) + ". <br>";
+		}
+
+		text += _icon(usualWinner) + " wins under Usual Judgment. <br>";
+		text += "<br>";
+
+		text += "<b>Majority Judgment</b><br>";
+		for ([id, count] of Object.entries(counts)){
+			text += _icon(id) + " has " + count.approve + " approvals and " + count.disapprove + " disapprovals. <br>"
+		}
+		text += "<br>";
+
+		while (winners.length > 1){
+			let largestVoterBlock = {id:"none", type:"approve", count:-1};
+			for(let id of winners){
+				let count = counts[id];
+				if (count.approve > largestVoterBlock.count){
+					largestVoterBlock = {id:id, type:"approve", count:count.approve};
+				}
+				if (count.disapprove > largestVoterBlock.count){
+					largestVoterBlock = {id:id, type:"disapprove", count:count.disapprove};
+				}
+
+			}
+
+			if (largestVoterBlock.type === "approve"){
+				winners = [largestVoterBlock.id];
+				text += _icon(largestVoterBlock.id) + " has the largest block approving and so...<br>";
+			} else {
+				winners = winners.filter((id) => id !== largestVoterBlock.id);
+				text += _icon(largestVoterBlock.id) + " has the largest block disapproving and is eliminated.<br>";
+				if(winners.length === 1){
+					text += "No more candidates can be eliminated, so... <br>";
+				}
+			}
+		}
+		winner = winners[0];
+	}
+
+	let winningColor = _colorWinner(model, winner);
+	text += "</span>";
+	text += "<br>";
+	text += "<b style='color:"+winningColor+"'>"+winner.toUpperCase()+"</b> WINS";
+	model.caption.innerHTML = text;
+
+}
+
 Election.approval = function(model, options){
 
 	// Tally the approvals & get winner!
