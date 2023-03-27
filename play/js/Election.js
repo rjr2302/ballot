@@ -41,7 +41,7 @@ Election.score = function(model, options){
 		text += _icon(winner)+" has the highest score, so...<br>";
 		text += "</span>";
 		text += "<br>";
-		text += "<b style='color:"+color+"'>"+winner.toUpperCase()+"</b> WINS";
+		text += "<b style='color:"+color+"'>"+_toCat(winner).toUpperCase()+"</b> WINS";
 		model.caption.innerHTML = text;
 
 	}
@@ -160,7 +160,7 @@ Election.judgment = function(model, options){
 	let winningColor = _colorWinner(model, winner);
 	text += "</span>";
 	text += "<br>";
-	text += "<b style='color:"+winningColor+"'>"+winner.toUpperCase()+"</b> WINS";
+	text += "<b style='color:"+winningColor+"'>"+_toCat(winner).toUpperCase()+"</b> WINS";
 	model.caption.innerHTML = text;
 
 }
@@ -195,7 +195,7 @@ Election.approval = function(model, options){
 		text += _icon(winner)+" is most approved, so...<br>";
 		text += "</span>";
 		text += "<br>";
-		text += "<b style='color:"+color+"'>"+winner.toUpperCase()+"</b> WINS";
+		text += "<b style='color:"+color+"'>"+_toCat(winner).toUpperCase()+"</b> WINS";
 		model.caption.innerHTML = text;
 
 	}
@@ -265,7 +265,7 @@ Election.condorcet = function(model, options){
 		text += _icon(topWinner)+" beats all other candidates in one-on-one races.<br>";
 		text += "</span>";
 		text += "<br>";
-		text += "<b style='color:"+color+"'>"+topWinner.toUpperCase()+"</b> WINS";
+		text += "<b style='color:"+color+"'>"+_toCat(topWinner).toUpperCase()+"</b> WINS";
 	}else{
 		model.canvas.style.borderColor = "#000"; // BLACK.
 		text += "NOBODY beats everyone else in one-on-one races.<br>";
@@ -313,7 +313,7 @@ Election.borda = function(model, options){
 		text += _icon(winner)+" has the <i>lowest</i> score, so...<br>";
 		text += "</span>";
 		text += "<br>";
-		text += "<b style='color:"+color+"'>"+winner.toUpperCase()+"</b> WINS";
+		text += "<b style='color:"+color+"'>"+_toCat(winner).toUpperCase()+"</b> WINS";
 		model.caption.innerHTML = text;
 
 	}
@@ -390,7 +390,7 @@ Election.irv = function(model, options){
 	var color = _colorWinner(model, finalWinner);
 	text += "</span>";
 	text += "<br>";
-	text += "<b style='color:"+color+"'>"+winner.toUpperCase()+"</b> WINS";
+	text += "<b style='color:"+color+"'>"+_toCat(winner).toUpperCase()+"</b> WINS";
 	model.caption.innerHTML = text;
 
 
@@ -429,7 +429,7 @@ Election.plurality = function(model, options){
 	}
 	text += "</span>";
 	text += "<br>";
-	text += "<b style='color:"+color+"'>"+winner.toUpperCase()+"</b> WINS";
+	text += "<b style='color:"+color+"'>"+_toCat(winner).toUpperCase()+"</b> WINS";
 	model.caption.innerHTML = text;
 
 };
@@ -493,4 +493,16 @@ var _colorWinner = function(model, winner){
 	var color = (winner) ? Candidate.graphics[winner].fill : "";
 	model.canvas.style.borderColor = color;
 	return color;
+}
+
+var _toCat = function(id) {
+  const catidates = {
+    'square': 'Blue Cat',
+    'triangle': 'Yellow Cat',
+    'hexagon': 'Red Cat',
+    'pentagon': 'Green Cat',
+    'bob': 'Orange Cat'
+  };
+  
+  return catidates[id];
 }
